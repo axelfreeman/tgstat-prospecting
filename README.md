@@ -1,5 +1,13 @@
 # TGStat Prospecting — Ready-Made TGStat API Reference for AI Agents
 
+<p align="center">
+  <a href="https://github.com/axelfreeman/tgstat-prospecting/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://github.com/axelfreeman/tgstat-prospecting/stargazers"><img src="https://img.shields.io/github/stars/axelfreeman/tgstat-prospecting?style=flat-square" alt="GitHub stars"></a>
+  <a href="https://github.com/axelfreeman"><img src="https://img.shields.io/badge/author-Axel%20Freeman-0A0A0A?style=flat-square" alt="Author"></a>
+</p>
+
+<p align="center"><i>⭐ Star this repo so your agent stops hallucinating the TGStat API.</i></p>
+
 > 🌐 [Russian version →](README.ru.md)
 
 **Give your AI agent the TGStat API — without it hallucinating the endpoints.**

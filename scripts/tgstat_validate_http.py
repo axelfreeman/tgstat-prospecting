@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Валидация каналов жив/мёртв через HTTP t.me/<u>. Без API, без аккаунта.
-Вход: JSON с channels[].username. Выход: живые + мёртвые."""
+"""Validate channels live/dead via HTTP t.me/<u>. No API, no account.
+Input: JSON with channels[].username. Output: live + dead."""
 import json, time, re, urllib.request, concurrent.futures, os
 
 SRC = os.environ.get("SRC_FILE", "tg_channels.json")
@@ -44,7 +44,7 @@ def main():
     json.dump({"live_count": len(live), "dead_count": len(dead),
                "live_channels": live, "dead_channels": dead},
               open(OUT, "w"), ensure_ascii=False, indent=2)
-    print(f"Живых {len(live)}, мёртвых {len(dead)} из {len(usernames)}")
+    print(f"Live {len(live)}, dead {len(dead)} of {len(usernames)}")
 
 if __name__ == "__main__":
     main()

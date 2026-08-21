@@ -45,7 +45,6 @@ Ask an agent "find Telegram channels about X" and it will invent `channels/searc
 ## Quick start (scripts)
 
 ```bash
-# 1. Search — drop your niche keywords in tgstat_search.py (marked "ЗАМЕНИ")
 export TGSTAT_API_KEY=your_key OUT_FILE=channels.json
 python3 scripts/tgstat_search.py
 

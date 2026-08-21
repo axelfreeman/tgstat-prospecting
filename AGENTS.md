@@ -41,7 +41,6 @@ A skill for collecting, validating and enriching Telegram channels via the TGSta
 | `scripts/tgstat_validate_http.py` | live/dead check | `SRC_FILE`, `OUT_FILE` |
 | `scripts/tgstat_extract_contacts.py` | bots/contacts from posts | `SRC_FILE`, `OUT_FILE` |
 
-Run order: `search` → `validate` → `extract`. Niche keywords and minus-words go in the scripts (marked "ЗАМЕНИ").
 
 ## Repo conventions
 

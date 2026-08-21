@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""TGStat channels/search — сбор каналов по ключам, всем странам/языкам.
-Токен из env TGSTAT_API_KEY. Ключи в COUNTRIES — пример, замени на свою нишу."""
+"""TGStat channels/search — collect channels by keywords, all countries/languages.
+Token from env TGSTAT_API_KEY. Keys in COUNTRIES are examples — replace with your niche."""
 import json, time, urllib.parse, urllib.request, os
 
 TOKEN = os.environ.get("TGSTAT_API_KEY", "")
 BASE = "https://api.tgstat.ru/channels/search"
 OUT = os.environ.get("OUT_FILE", "tg_channels.json")
 
-# страна -> (язык, [ключевые слова ниши]) — ЗАМЕНИ на свои
+# country -> (language, [niche keywords]) — REPLACE with your own
 COUNTRIES = {
-    "ru": ("russian", ["ключ1", "ключ2"]),
-    "cn": ("chinese", ["ключ1", "ключ2"]),
+    "ru": ("russian", ["key1", "key2"]),
+    "cn": ("chinese", ["key1", "key2"]),
 }
 
 def search(q, country, language, peer_type="all", search_by_description=1, limit=100):
@@ -25,7 +25,7 @@ def search(q, country, language, peer_type="all", search_by_description=1, limit
 
 def main():
     if not TOKEN:
-        print("Задай TGSTAT_API_KEY в окружении")
+        print("Set TGSTAT_API_KEY in the environment")
         return
     db = {}
     for country, (lang, kws) in COUNTRIES.items():
@@ -33,24 +33,24 @@ def main():
             try:
                 d = search(kw, country, lang)
             except Exception as e:
-                print(f"[{country}] '{kw}' ОШИБКА: {e}"); time.sleep(3); continue
+                print(f"[{country}] '{kw}' ERROR: {e}"); time.sleep(3); continue
             if d.get("status") != "ok":
                 err = d.get("error")
                 if err in ("flood_control_10", "flood_control_60"):
                     time.sleep(65); continue
                 if err == "quota_requests_reached":
-                    print("КВОТА ИСЧЕРПАНА"); return
-                print(f"[{country}] '{kw}' → {err}"); continue
+                    print("QUOTA EXHAUSTED"); return
+                print(f"[{country}] '{kw}' -> {err}"); continue
             items = d.get("response", {}).get("items", [])
             for it in items:
                 u = it.get("username", "").lstrip("@")
                 if u and u not in db:
                     db[u] = it
-            print(f"[{country}] '{kw}' → {len(items)}, база {len(db)}")
+            print(f"[{country}] '{kw}' -> {len(items)}, db {len(db)}")
             time.sleep(2.5)
     ranked = sorted(db.values(), key=lambda x: x.get("participants_count", 0) or 0, reverse=True)
     json.dump({"total": len(ranked), "channels": ranked}, open(OUT, "w"), ensure_ascii=False, indent=2)
-    print(f"ГОТОВО: {len(ranked)} каналов → {OUT}")
+    print(f"DONE: {len(ranked)} channels -> {OUT}")
 
 if __name__ == "__main__":
     main()

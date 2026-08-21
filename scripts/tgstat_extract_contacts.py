@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Извлечение ботов/контактов из постов каналов через t.me/s/<u>. Без API, без аккаунта.
-Вход: JSON с channels[].username. Выход: каналы → боты + контакты."""
+"""Extract bots/contacts from channel posts via t.me/s/<u>. No API, no account.
+Input: JSON with channels[].username. Output: channels -> bots + contacts."""
 import json, re, time, urllib.request, concurrent.futures, os
 
 SRC = os.environ.get("SRC_FILE", "tg_channels_live.json")
 OUT = os.environ.get("OUT_FILE", "contacts_from_posts.json")
 
-# мусорные упоминания (общие ссылки Telegram и поисковики) — дополни своей нишей
+# junk mentions (common Telegram links and search engines) — add your niche
 JUNK = {'telegram', 'durov', 'addlist', 'joinchat', 'share', 'forward', 'embed',
         'tgme', 'tme', 'web', 'channels', 'bots', 'settings', 'proxy', 'premium',
         'wallet', 'username', 'stories', 'catalog'}
@@ -38,7 +38,7 @@ def extract(u):
 
 def main():
     d = json.load(open(SRC))
-    # принимает и channels[], и {channels: ...}
+    # accepts both channels[] and {channels: ...}
     chans = d.get("channels", d) if isinstance(d, dict) else d
     if isinstance(chans, dict) and "live_channels" in chans:
         chans = chans["live_channels"]
@@ -50,7 +50,7 @@ def main():
             results[u] = {"other_mentions": others, "bots": bots}
     json.dump({"channels": results}, open(OUT, "w"), ensure_ascii=False, indent=2)
     with_bots = sum(1 for v in results.values() if v.get("bots"))
-    print(f"{len(results)} каналов, с ботами {with_bots}")
+    print(f"{len(results)} channels, {with_bots} with bots")
 
 if __name__ == "__main__":
     main()

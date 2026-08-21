@@ -6,145 +6,145 @@ version: 1.0.0
 
 # Telegram Channel Collection & Validation — TGStat API + HTTP
 
-**Готовое описание TGStat API для AI-агентов.** Агент (Claude, Cursor, Hermes, Codex, Cline) подгружает этот скилл и сразу знает: какие эндпоинты дёргать, какие параметры передавать, какие ошибки ловить и как обходить квоты. Не выдумывает API сам — берёт готовую методологию.
+**A ready-made TGStat API reference for AI agents.** An agent (Claude, Cursor, Hermes, Codex, Cline) loads this skill and immediately knows which endpoints to call, which parameters to pass, which errors to catch, and how to work around quotas. It never hallucinates the API — it uses this methodology.
 
-Сбор и валидация Telegram-каналов/ботов через TGStat API, с HTTP-скрейпингом как альтернативой (когда кончилась квота API или валидация через API долгая). Универсально — любая тематика, любой язык, любой агент.
+Collect and validate Telegram channels/bots via the TGStat API, with HTTP scraping as a fallback (when the API quota runs out or validation via the API is too slow). Universal — any niche, any language, any agent.
 
-## 1. TGStat API — основной способ
+## 1. TGStat API — primary method
 
-**База:** `https://api.tgstat.ru/`
-**Авторизация:** параметр `token` в каждом запросе (постоянный, берётся в Личном кабинете tgstat.ru).
+**Base:** `https://api.tgstat.ru/`
+**Auth:** a `token` query parameter on every request (permanent, from the tgstat.ru dashboard).
 
-### Три API-сервиса
+### Three API services
 
-| Сервис | Что | Методы |
+| Service | What it does | Methods |
 |--------|-----|--------|
-| **Stat API** | аналитика каналов | channels/get, channels/stat, channels/posts, channels/subscribers, channels/views, channels/avg-posts-reach, channels/er/err/err24 |
-| **Search API** | поиск по базе публикаций | posts/search, words/mentions-by-period, words/mentions-by-channels |
-| **Callback API** | уведомления в реальном времени | callback/subscribe-channel, callback/subscribe-word |
+| **Stat API** | channel analytics | channels/get, channels/stat, channels/posts, channels/subscribers, channels/views, channels/avg-posts-reach, channels/er/err/err24 |
+| **Search API** | search across the post database | posts/search, words/mentions-by-period, words/mentions-by-channels |
+| **Callback API** | real-time notifications | callback/subscribe-channel, callback/subscribe-word |
 
-### Ключевой метод сбора — `channels/search`
+### Key collection method — `channels/search`
 
 ```
 GET https://api.tgstat.ru/channels/search
   ?token=XXX
-  &q=ключевое_слово    # мин 3 символа
-  &country=XX          # 10 стран: ru ua by uz kz ir kg in cn et
-  &language=YYY        # код языка (см. database/languages)
-  &peer_type=all       # channel/chat/all
-  &search_by_description=1   # искать также в описаниях
-  &limit=100           # макс 100
+  &q=keyword        # min 3 chars
+  &country=XX       # 10 countries: ru ua by uz kz ir kg in cn et
+  &language=YYY     # language code (see database/languages)
+  &peer_type=all    # channel/chat/all
+  &search_by_description=1   # also search descriptions
+  &limit=100        # max 100
 ```
 
-**Возвращает** `Channel[]` с полями: `username`, `title`, `about`, `participants_count`, `link`. Подписчики и описание приходят сразу — отдельный `channels/get`/`stat` не нужен (экономит квоту).
+**Returns** `Channel[]` with fields: `username`, `title`, `about`, `participants_count`, `link`. Subscribers and description come inline — no separate `channels/get`/`stat` call needed (saves quota).
 
-### Справочники (бесплатно, вне тарификации)
+### Reference tables (free, outside billing)
 
-- `database/categories` — категории каналов
-- `database/countries` — доступные страны (ru ua by uz kz ir kg in cn et)
-- `database/languages` — доступные языки (коды)
+- `database/categories` — channel categories
+- `database/countries` — available countries (ru ua by uz kz ir kg in cn et)
+- `database/languages` — available languages (codes)
 
-### Контроль квоты
+### Quota control
 
 ```
 GET https://api.tgstat.ru/usage/stat?token=XXX
 → spentChannels, spentRequests, expiredAt
 ```
 
-### Тарификация
+### Billing
 
-- Квота: общее число запросов/мес + уникальные каналы (Stat) + уникальные ключевые слова (Search).
-- `channels/search`, `subscribers`, `views`, `er/err/err24`, `add` — тариф S и выше.
-- `channels/get`, `stat`, `posts`, `mentions`, `forwards`, `posts/get`, `posts/stat` — все тарифы.
+- Quota: total requests/month + unique channels (Stat) + unique keywords (Search).
+- `channels/search`, `subscribers`, `views`, `er/err/err24`, `add` — plan S and above.
+- `channels/get`, `stat`, `posts`, `mentions`, `forwards`, `posts/get`, `posts/stat` — all plans.
 
-### Ошибки
+### Errors
 
-| Код | Значение |
+| Code | Meaning |
 |-----|----------|
-| `flood_control_10` / `flood_control_60` | слишком часто — добавить паузу |
-| `quota_requests_reached` | кончилась квота запросов |
-| `quota_channel_reached` | кончилась квота уникальных каналов |
-| `param country required` | `country` обязателен для search |
-| `param q is too short` | ключ < 3 символов |
-| `outdated_statistics` | повторить через 15 мин |
+| `flood_control_10` / `flood_control_60` | too frequent — add a pause |
+| `quota_requests_reached` | request quota exhausted |
+| `quota_channel_reached` | unique-channel quota exhausted |
+| `param country required` | `country` is required for search |
+| `param q is too short` | key < 3 chars |
+| `outdated_statistics` | retry in 15 min |
 
-### Расширенный синтаксис поиска
+### Advanced search syntax
 
-Операторы: `=` точное, `*` часть слова, `|` ИЛИ, `""` фраза, `-` минус-слово, `()` группировка. Параметр `extendedSyntax=1`.
+Operators: `=` exact, `*` partial word, `|` OR, `""` phrase, `-` minus-word, `()` grouping. Parameter `extendedSyntax=1`.
 
-## 2. HTTP-валидация — альтернатива / фолбэк
+## 2. HTTP validation — alternative / fallback
 
-Когда квота API кончилась или валидация через API слишком медленная — проверять жив/мёртв можно напрямую по публичной странице канала, без API и без аккаунта:
+When the API quota runs out or API validation is too slow, check live/dead directly on the public channel page, no API and no account:
 
 ```
 GET https://t.me/<username>
 ```
 
-| Сигнал | Живой | Мёртвый (удалён/переименован) |
-|--------|-------|-------------------------------|
-| `og:title` | реальное имя | `Telegram: Contact @username` |
-| `og:image` | `cdn.telesco.pe/...` или `data:image/svg` | `telegram.org/img/t_logo_2x.png` (дефолтный логотип) |
-| `og:description` | текст | пусто |
+| Signal | Live | Dead (deleted/renamed) |
+|--------|-------|------------------------|
+| `og:title` | real name | `Telegram: Contact @username` |
+| `og:image` | `cdn.telesco.pe/...` or `data:image/svg` | `telegram.org/img/t_logo_2x.png` (default logo) |
+| `og:description` | text | empty |
 
-**Правило:** живой ⇔ `og:title` не пустой и не начинается с `Telegram: Contact @`. Либо — `og:image` не содержит `t_logo_2x.png`.
+**Rule:** live ⇔ `og:title` non-empty and not starting with `Telegram: Contact @`. Or — `og:image` doesn't contain `t_logo_2x.png`.
 
-Выживаемость каналов в нишевых тематиках ~40-50% — валидация обязательна перед рассылкой.
+Channel survival in niche topics is ~40-50% — validation is mandatory before outreach.
 
-## 3. Извлечение контактов/ботов из постов
+## 3. Extracting contacts/bots from posts
 
-Контакты часто не в описании, а в постах (закрепы, «жми → бот», inline-кнопки). Достаётся через публичный превью:
+Contacts are often not in the description but in posts (pinned, "tap → bot", inline buttons). Pulled via the public preview:
 
 ```
 GET https://t.me/s/<username>
 ```
 
-`t.me/s/` рендерит ~15-20 последних постов серверно (HTML). Оттуда извлекаются:
-- `@упоминания` и `t.me/ссылки` в тексте постов
-- ссылки на ботов (username оканчивается на `bot`)
+`t.me/s/` server-renders ~15-20 recent posts (HTML). Extract from there:
+- `@mentions` and `t.me/links` in post text
+- bot links (username ending in `bot`)
 
-Боты = продукты операторов = точки контакта.
+Bots = the operators' products = contact points.
 
-## 4. Фильтр по тематике
+## 4. Niche filtering
 
-Фильтруй каналы по своим ключам и минус-словам. Подставь слова своей ниши:
-
-```
-ключи:      <ключевые_слова_ниши>
-минус-слова: <нерелевантные_слова_для_исключения>
-```
-
-Совет: составь списки на каждом языке целевых стран (локальные термины ищутся лучше, чем английские).
-
-## 5. Пайплайн целиком
+Filter channels by your own keys and minus-words. Substitute your niche words:
 
 ```
-1. TGStat channels/search (по ключам, всем нужным странам/языкам)
-2. + сторонние каталоги (GitHub-коллекции, директории) при необходимости
-3. Дедуп против своей базы контактов + прошлых дампов
-4. Валидация жив/мёртв (HTTP t.me/<u> — если квота кончилась, либо channels/get)
-5. Фильтр по тематике (ключи + минус-слова)
-6. Извлечение ботов/контактов из постов (t.me/s/<u>)
-7. → финальный список операторов + их боты
+keys:        <niche_keywords>
+minus-words: <irrelevant_words_to_exclude>
 ```
 
-## 6. ⚠️ Критические правила
+Tip: build lists in each target country's language (local terms search better than English ones).
 
-1. **HTTP вместо клиентских библиотек**: `t.me/` и `t.me/s/` отдают публичные данные без авторизации — используй их для массовой валидации и скрейпа. Любые клиентские библиотеки при массовых запросах ловят FloodWait на часы.
-2. **Параллелизм ≤8 потоков** — при большем числе потоков Telegram режет IP и возвращает пустые og-теги (ложные «мёртвые»). При 6-8 воркерах добавляй ретрай на пустой ответ.
-3. **Ложные друзья в языках** — короткие термины могут совпадать с другими значениями (например, слово со значением числа или названием другой модели). Проверяй реальные термины ниши в каждом языке перед поиском.
-4. **Нелегальный контент** (детский/CSAM) — исключать жёстко, это уголовка в любой юрисдикции.
+## 5. Full pipeline
 
-## 7. Скрипты (вшиты в скилл, `scripts/`)
+```
+1. TGStat channels/search (by keys, all target countries/languages)
+2. + external directories (GitHub collections, directories) if needed
+3. Dedup against your own contact base + past dumps
+4. Validate live/dead (HTTP t.me/<u> — if quota ran out, or channels/get)
+5. Filter by niche (keys + minus-words)
+6. Extract bots/contacts from posts (t.me/s/<u>)
+7. → final list of operators + their bots
+```
 
-| Скрипт | Что делает | Env-параметры |
+## 6. ⚠️ Critical rules
+
+1. **HTTP instead of client libraries**: `t.me/` and `t.me/s/` serve public data without auth — use them for mass validation and scraping. Any client libraries hit FloodWait for hours on mass requests.
+2. **Parallelism ≤8 workers** — beyond that Telegram rate-limits the IP and returns empty og-tags (false "dead"). At 6-8 workers, add a retry on empty response.
+3. **False friends across languages** — short terms can collide with other meanings (e.g. a word that means a number or another model name). Check the real niche terms in each language before searching.
+4. **Illegal content** (child/CSAM) — exclude hard; it's criminal in every jurisdiction.
+
+## 7. Scripts (bundled in the skill, `scripts/`)
+
+| Script | What it does | Env params |
 |--------|-----------|---------------|
-| `scripts/tgstat_search.py` | сбор каналов через `channels/search` | `TGSTAT_API_KEY`, `OUT_FILE` |
-| `scripts/tgstat_validate_http.py` | валидация жив/мёртв (HTTP) | `SRC_FILE`, `OUT_FILE` |
-| `scripts/tgstat_extract_contacts.py` | боты/контакты из постов (`t.me/s/`) | `SRC_FILE`, `OUT_FILE` |
+| `scripts/tgstat_search.py` | collect channels via `channels/search` | `TGSTAT_API_KEY`, `OUT_FILE` |
+| `scripts/tgstat_validate_http.py` | live/dead validation (HTTP) | `SRC_FILE`, `OUT_FILE` |
+| `scripts/tgstat_extract_contacts.py` | bots/contacts from posts (`t.me/s/`) | `SRC_FILE`, `OUT_FILE` |
 
-Порядок запуска: `search` → `validate` → `extract`. Ключи ниши и минус-слова подставляются в самих скриптах (помечены комментарием «ЗАМЕНИ»).
+Run order: `search` → `validate` → `extract`. Niche keys and minus-words go in the scripts themselves (marked with a "REPLACE" comment).
 
-Пример:
+Example:
 ```bash
 export TGSTAT_API_KEY=xxx
 export OUT_FILE=channels.json

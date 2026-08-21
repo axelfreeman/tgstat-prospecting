@@ -142,17 +142,4 @@ Tip: build lists in each target country's language (local terms search better th
 | `scripts/tgstat_validate_http.py` | live/dead validation (HTTP) | `SRC_FILE`, `OUT_FILE` |
 | `scripts/tgstat_extract_contacts.py` | bots/contacts from posts (`t.me/s/`) | `SRC_FILE`, `OUT_FILE` |
 
-Run order: `search` → `validate` → `extract`. Niche keys and minus-words go in the scripts themselves (marked with a "REPLACE" comment).
-
-Example:
-```bash
-export TGSTAT_API_KEY=xxx
-export OUT_FILE=channels.json
-python3 scripts/tgstat_search.py
-
-export SRC_FILE=channels.json OUT_FILE=live.json
-python3 scripts/tgstat_validate_http.py
-
-export SRC_FILE=live.json OUT_FILE=contacts.json
-python3 scripts/tgstat_extract_contacts.py
-```
+Run order: `search` → `validate` → `extract`. The exact invocation and env vars are in the README.

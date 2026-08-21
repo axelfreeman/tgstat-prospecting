@@ -9,7 +9,6 @@
 
 <p align="center"><i>⭐ Star this repo so your agent stops hallucinating the TGStat API.</i></p>
 
-> 🌐 [Russian version →](README.ru.md)
 
 **Give your AI agent the TGStat API — without it hallucinating the endpoints.**
 

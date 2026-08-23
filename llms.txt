@@ -1,0 +1,3 @@
+# TGStat Prospecting
+
+Use the TGStat API inside AI agents to search, validate, and extract contacts from Telegram channels — a ready-made API reference so agents don't hallucinate endpoints.

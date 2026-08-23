@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schema.json",
+  "name": "tgstat-prospecting",
+  "version": "1.0.0",
+  "description": "Use the TGStat API inside AI agents to search, validate, and extract contacts from Telegram channels — a ready-made API reference.",
+  "author": "Axel Freeman",
+  "license": "MIT",
+  "homepage": "https://github.com/axelfreeman/tgstat-prospecting",
+  "repository": "https://github.com/axelfreeman/tgstat-prospecting",
+  "skills": [
+    {
+      "name": "tgstat-prospecting",
+      "description": "Use the TGStat API inside AI agents to search, validate, and extract contacts from Telegram channels — a ready-made API reference."
+    }
+  ],
+  "mcpServers": []
+}
